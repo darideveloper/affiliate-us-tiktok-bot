@@ -9,11 +9,14 @@ CATEGORY = os.getenv("CATEGORY")
 FOLLOWERS = os.getenv("FOLLOWERS")
 CONTENT_TYPE = os.getenv("CONTENT_TYPE")
 CREATOR_AGENCY = os.getenv("CREATOR_AGENCY")
+CREATORS_NUM_LOOP = int(os.getenv("CREATORS_NUM_LOOP"))
 
 if __name__ == '__main__':
+    
     logger.info("Starting bot...")
     bot = Bot(
-        CHROME_FOLDER
+        CHROME_FOLDER,
+        CREATORS_NUM_LOOP
     )
     
     # Login validation
@@ -21,12 +24,16 @@ if __name__ == '__main__':
     if not is_logged:
         logger.error("Error: Login failed")
         quit()
-        
+    
+    logger.info("Filtering creators...")
     bot.filter_creators(
         CATEGORY,
         FOLLOWERS,
         CONTENT_TYPE,
         CREATOR_AGENCY
     )
+    
+    logger.info("Saving creators...")
+    bot.save_creators()
     
     print("done")

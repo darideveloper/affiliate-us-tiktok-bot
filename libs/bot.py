@@ -1,14 +1,19 @@
+from time import sleep
 from libs.web_scraping import WebScraping
 
 
 class Bot(WebScraping):
     
-    def __init__(self, chrome_folder: str):
+    def __init__(self, chrome_folder: str, creators_num_loop: int):
         """ Start chrome and load home page
         
         Args:
             chrome_folder (str): path to chrome data folder
+            creators_num_loop (int): number of loops to save creators
         """
+        
+        # Save settings
+        self.creators_num_loop = creators_num_loop
         
         # Start chrome
         super().__init__(
@@ -95,8 +100,49 @@ class Bot(WebScraping):
         self.__select_dropdown__(selectors["creator_agency"], creator_agency)
     
     def save_creators(self):
-        pass
-    
+        """ Save new creators """
+               
+        selectors = {
+            "row": '.arco-table-body tr',
+            "separator": '.arco-table-body tr + div',
+            'save_btn': 'td:last-child button:nth-child(2)',
+            'svg_selector_saved': '.alliance-icon.alliance-icon-Saved'
+        }
+        
+        creators_saved = 0
+        while True:
+        
+            # Remove separator
+            script = f"""document.querySelectorAll('{selectors['separator']}')
+                        .forEach(div => div.remove())"""
+            self.driver.execute_script(script)
+            self.refresh_selenium()
+            
+            # Click in "save" buttons
+            rows_elems = self.get_elems(selectors["row"])
+            for row_index in range(len(rows_elems)):
+                            
+                # Generate selector
+                save_selector = f"{selectors['row']}:nth-child({row_index + 1})"
+                save_selector += f" {selectors['save_btn']}"
+                
+                # Validate if creator is already saved
+                selector_svg = f"{save_selector} {selectors['svg_selector_saved']}"
+                svg_elem = self.get_elems(selector_svg)
+                if svg_elem:
+                    continue
+                self.click_js(save_selector)
+                sleep(4)
+                
+                # Increase counter and end loop when reach limit
+                creators_saved += 1
+                if creators_saved >= self.creators_num_loop:
+                    return
+                
+            # Load more creators
+            self.go_bottom()
+            self.refresh_selenium(time_units=3)
+                            
     def show_saved_creators(self):
         pass
     
