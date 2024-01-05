@@ -34,6 +34,7 @@ if __name__ == '__main__':
     )
     
     logger.info("Saving creators...")
-    bot.save_creators()
+    # bot.save_creators()
+    bot.show_select_saved_creators()
     
     print("done")

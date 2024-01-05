@@ -143,10 +143,45 @@ class Bot(WebScraping):
             self.go_bottom()
             self.refresh_selenium(time_units=3)
                             
-    def show_saved_creators(self):
-        pass
-    
+    def show_select_saved_creators(self):
+        """ Display lateral menu and select specific number of saved creators """
+        
+        selectors = {
+            "show_menu_btn": 'div.m4b-page-header-head-extra > button',
+            "batch_invite_btn": '.bg-white > div:nth-child(2) > button:first-child',
+            "creator_row": 'div.arco-drawer-content div.arco-table-body tr',
+            "checkbox": 'input[type="checkbox"]'
+        }
+        
+        # Show menu
+        self.click(selectors["show_menu_btn"])
+        self.refresh_selenium()
+        
+        # Select batch invite
+        self.click(selectors["batch_invite_btn"])
+        self.refresh_selenium()
+        
+        # Loop creators for select specific number of them
+        creators_selected = 0
+        creators_rows = len(self.get_elems(selectors["creator_row"]))
+        for index in range(creators_rows):
+            
+            # Select creator
+            selector_checkbox = f"{selectors['creator_row']}:nth-child({index + 1}) " \
+                f"{selectors['checkbox']}"
+            checkbox_elem = self.get_elems(selector_checkbox)
+            if not checkbox_elem:
+                continue
+            self.click_js(selector_checkbox)
+            sleep(0.5)
+            
+            # Increase counter and end loop when reach limit
+            creators_selected += 1
+            if creators_selected >= self.creators_num_loop:
+                break
+        
     def invtate_creators(self):
+        """ Send invitation for selected creators """
         pass
     
     def send_invitation(self):
