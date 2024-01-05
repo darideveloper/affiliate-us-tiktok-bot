@@ -92,7 +92,7 @@ class Bot(WebScraping):
             "creator_agency": '#creatorAgency > div > button',
         }
         
-        self.click(selectors["creators_btn"])
+        self.click_js(selectors["creators_btn"])
         self.refresh_selenium()
         self.__select_dropdown__(selectors["categories"], category)
         self.__select_dropdown__(selectors["followers"], followers)
@@ -155,11 +155,11 @@ class Bot(WebScraping):
         }
         
         # Show menu
-        self.click(selectors["show_menu_btn"])
+        self.click_js(selectors["show_menu_btn"])
         self.refresh_selenium()
         
         # Select batch invite
-        self.click(selectors["batch_invite_btn"])
+        self.click_js(selectors["batch_invite_btn"])
         self.refresh_selenium()
         
         # Loop creators for select specific number of them
@@ -210,7 +210,7 @@ class Bot(WebScraping):
         product_id = str(product_id)
         
         # Display products menu
-        self.click(selectors["add_product_btn"])
+        self.click_js(selectors["add_product_btn"])
         self.refresh_selenium()
         
         # Loop product for select correct one
@@ -249,5 +249,47 @@ class Bot(WebScraping):
         
         return True
     
-    def send_invitation(self):
-        pass
+    def send_invitation(self, invitation_name: str, valid_until_years: int,
+                        contact_email: str, contact_phone: str, wait_for_message: bool):
+        """ Send invitation for selected creators
+        
+        Args:
+            invitation_name (str): name of invitation
+            valid_until_years (int): number of years for invitation expiration
+            contact_email (str): contact email
+            contact_phone (str): contact phone
+            wait_for_message (bool): wait for message from user
+        """
+        
+        selectors = {
+            "display_info_btn": 'div:nth-child(3) > div > div > div[role="button"]',
+            "input_name": 'input[placeholder="Invitation name"]',
+            "input_email": 'input[placeholder="Please enter an email address"]',
+            "input_phone": 'input[placeholder="Please enter a phone number"]',
+            "input_date": 'input[placeholder="End date"]',
+            "next_year_btn": 'div.arco-picker-header > div:nth-child(5)',
+            "calendar_day": '.arco-picker-body .arco-picker-date-value',
+            "send_btn": '.self-end button:last-child'
+        }
+        
+        # Show invitation form
+        self.click_js(selectors["display_info_btn"])
+        self.refresh_selenium()
+        
+        # Set invitation data
+        self.send_data(selectors["input_name"], invitation_name)
+        self.send_data(selectors["input_email"], contact_email)
+        self.send_data(selectors["input_phone"], contact_phone)
+        
+        # Select date in the next years
+        self.click_js(selectors["input_date"])
+        for _ in range(valid_until_years):
+            self.click_js(selectors["next_year_btn"])
+            self.refresh_selenium()
+        self.click_js(selectors["calendar_day"])
+        
+        if wait_for_message:
+            input("Write a custom message. Press enter to continue...")
+        
+        self.click_js(selectors["send_btn"])
+        
