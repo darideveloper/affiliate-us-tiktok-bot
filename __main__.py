@@ -10,6 +10,8 @@ FOLLOWERS = os.getenv("FOLLOWERS")
 CONTENT_TYPE = os.getenv("CONTENT_TYPE")
 CREATOR_AGENCY = os.getenv("CREATOR_AGENCY")
 CREATORS_NUM_LOOP = int(os.getenv("CREATORS_NUM_LOOP"))
+PRODUCT_ID = int(os.getenv("PRODUCT_ID"))
+PRODUCT_PERCENTAGE = int(os.getenv("PRODUCT_PERCENTAGE"))
 
 if __name__ == '__main__':
     
@@ -35,6 +37,20 @@ if __name__ == '__main__':
     
     logger.info("Saving creators...")
     # bot.save_creators()
-    bot.show_select_saved_creators()
+    
+    logger.info("Selecting creators...")
+    creators_selected = bot.select_creators()
+    if not creators_selected:
+        logger.error("Error: No enough creators found")
+        quit()
+    
+    logger.info("Selecting product...")
+    product_selected = bot.select_product(
+        PRODUCT_ID,
+        PRODUCT_PERCENTAGE
+    )
+    if not product_selected:
+        logger.error("Error: Product not found")
+        quit()
     
     print("done")

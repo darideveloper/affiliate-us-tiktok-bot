@@ -143,14 +143,15 @@ class Bot(WebScraping):
             self.go_bottom()
             self.refresh_selenium(time_units=3)
                             
-    def show_select_saved_creators(self):
+    def select_creators(self):
         """ Display lateral menu and select specific number of saved creators """
         
         selectors = {
             "show_menu_btn": 'div.m4b-page-header-head-extra > button',
             "batch_invite_btn": '.bg-white > div:nth-child(2) > button:first-child',
             "creator_row": 'div.arco-drawer-content div.arco-table-body tr',
-            "checkbox": 'input[type="checkbox"]'
+            "checkbox": 'input[type="checkbox"]',
+            "send_invitation_btn": '.bg-white div:nth-child(2) > button:nth-child(3)',
         }
         
         # Show menu
@@ -179,10 +180,74 @@ class Bot(WebScraping):
             creators_selected += 1
             if creators_selected >= self.creators_num_loop:
                 break
+            
+        # Return false if less creators than expected were selected
+        if creators_selected < self.creators_num_loop:
+            return False
+            
+        self.click_js(selectors["send_invitation_btn"])
+        self.refresh_selenium()
+        return True
         
-    def invtate_creators(self):
-        """ Send invitation for selected creators """
-        pass
+    def select_product(self, product_id: int, product_pct: int):
+        """ Send invitation for selected creators
+        
+        Args:
+            product_id (int): product id to select
+            product_pct (int): percentage of product to share with creators
+        """
+        
+        selectors = {
+            "add_product_btn": 'div.arco-table-body button',
+            "product_row": 'div.arco-drawer-wrapper table tbody tr',
+            "product_id": '.text-neutral-text3.text-body-s-regular',
+            "product_checkbox": "input[type='checkbox']",
+            "product_save": 'div.slideRight-enter-done button:last-child',
+            "product_pct": 'input[placeholder="1.00-80.00"]',
+        }
+        
+        # Format product id
+        product_id = str(product_id)
+        
+        # Display products menu
+        self.click(selectors["add_product_btn"])
+        self.refresh_selenium()
+        
+        # Loop product for select correct one
+        product_found = False
+        products_rows = len(self.get_elems(selectors["product_row"]))
+        for index in range(products_rows):
+            
+            # Product selectors
+            selector_product = f"{selectors['product_row']}:nth-child({index + 1})"
+            selector_product_id = f"{selector_product} {selectors['product_id']}"
+            selector_product_checkbox = f"{selector_product} " \
+                f"{selectors['product_checkbox']}"
+            
+            # Validate product id
+            product_id_elem = self.get_elems(selector_product_id)
+            product_id_value = self.get_text(selector_product_id)
+            if not product_id_elem or product_id not in product_id_value:
+                continue
+            
+            # Select product
+            self.click_js(selector_product_checkbox)
+            self.refresh_selenium()
+            product_found = True
+            break
+        
+        # Return false if product not found
+        if not product_found:
+            return False
+        
+        # Save product
+        self.click_js(selectors["product_save"])
+        self.refresh_selenium()
+        
+        # Set percentage
+        self.send_data(selectors["product_pct"], str(product_pct))
+        
+        return True
     
     def send_invitation(self):
         pass
