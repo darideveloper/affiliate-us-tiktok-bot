@@ -26,7 +26,7 @@ class Bot(WebScraping):
             "connection/creator?shop_region=US"
         self.set_page(self.home_page)
         
-        self.refresh_selenium(time_units=2)
+        self.refresh_selenium(time_units=4)
     
     def __select_dropdown__(self, selector_dropdown: str, elem_text: str):
         """ Select specific drop down element
